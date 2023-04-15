@@ -1,7 +1,6 @@
 package com.unity.cache.node;
 
 import com.unity.cache.AbstractTest;
-import com.unity.cache.DistributedCache;
 import com.unity.cache.exceptions.InternalException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;

@@ -129,7 +129,7 @@ class DistributedCacheTest extends AbstractTest {
     }
 
     @Test
-    void testCache_givenShutdownNode_allPass() {
+    void testCache_givenShutdownNode_allPass() throws InterruptedException {
         //Put data to 3-node 3-replica cache then shutdown one node
         Node node4 = new Node("node4", 123, NodeType.REDIS);
         nodeManager.nodeAdded(node4);
@@ -140,6 +140,7 @@ class DistributedCacheTest extends AbstractTest {
 
         //Node is down, all entries should be moved to other nodes. Total size should be same
         nodeManager.nodeShuttingDown(node4);
+        Thread.sleep(1000);
         DATA.forEach((key, value) -> {
             assertThat(distributedCache.get(key)).isPresent();
             assertThat(distributedCache.get(key).get()).isEqualTo(value);
