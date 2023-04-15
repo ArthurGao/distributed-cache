@@ -29,5 +29,7 @@ jobs:
       - run: git checkout HEAD^
 
       # Runs a single command using the runners shell
-      - name: Run a one-line script
+      - name: Run maven install 
         run: mvn clean install
+      - name: Run maven test
+        run: mvn test
