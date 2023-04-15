@@ -12,6 +12,8 @@ import java.util.stream.IntStream;
 
 /**
  * NodeManager is used to manage the nodes in the cluster.
+ * It is a singleton class and can be accessed by NodeManager.getInstance()
+ * It is also a NodeEventHandler which is used to handle node events
  */
 public class NodeManager implements NodeEventHandler {
 
@@ -26,7 +28,7 @@ public class NodeManager implements NodeEventHandler {
 
     /**
      * NodeManager is a singleton class with this as only entry point
-     * @return NodeManager instance
+     * @return NodeManager singleton instance
      */
     public static NodeManager getInstance() {
         if (instance == null) {
@@ -37,8 +39,9 @@ public class NodeManager implements NodeEventHandler {
 
     /**
      * Initialize the node manager with a list of nodes and number of replicas in cluster
-     * @param nodeList
-     * @param numReplicas
+     * @param nodeList List of nodes to be initialized
+     * @param numReplicas Number of replicas in cluster(0 means no replica)
+     * @throws IllegalArgumentException if numReplicas is less than 0
      */
     public void init(List<Node> nodeList, int numReplicas) {
         this.hashedNodeList.clear();
@@ -52,8 +55,10 @@ public class NodeManager implements NodeEventHandler {
     /**
      * Get the node from cluster. The node is determined by the hash value of the key
      * Will always return a node
-     * @param key
-     * @return Node
+     * @param key Key to be hashed(it can be any object, but it must be serializable)
+     * @return Node that the key is hashed to
+     * @throws IllegalArgumentException if key is null
+     * @throws InternalException if no node is available
      */
     public Node nodeGet(Serializable key) {
         if (key == null) {
@@ -79,6 +84,12 @@ public class NodeManager implements NodeEventHandler {
      * Will add it to a position base on consistent hash algorithm in the node list
      * Will dispatch the cache of the previous node and next node to the new node
      * No cached content will be lost from the cluster (but shuffle between different nodes)
+     * @param node Node to be added
+     *             Node id must be unique
+     *             Node can not be null
+     *             Node can not be added if it already exists
+     * @throws IllegalArgumentException if node is null or node already exists or the cluster is empty
+     * @throws InternalException if no node is available
      */
     @Override
     public void nodeAdded(Node node) {
@@ -108,7 +119,13 @@ public class NodeManager implements NodeEventHandler {
      * Will remove the node from the node list
      * Will NOT dispatch the cache of the this removed node to the new node
      * Cached content in this node will be lost
-     * @param node
+     * @param node Node to be removed
+     *             Node can not be null
+     *             Node can not be removed if it does not exist
+     *             Node can not be removed if it is the last node
+     * @throws IllegalArgumentException if node is null or node does not exist or the cluster is empty
+     * @throws InternalException if no node is available
+     * @throws IllegalArgumentException if node is null or node does not exist or the cluster is empty
      */
     @Override
     public void nodeRemoved(Node node) {
@@ -130,7 +147,13 @@ public class NodeManager implements NodeEventHandler {
      * Will remove the node from the node list
      * Will dispatch the cache of the this removed node to the new node
      * Cached content in this node will NOT be lost (But shuffled to other nodes)
-     * @param node
+     * @param node  Node to be shutdown
+     *              Node can not be null
+     *              Node can not be shutdown if it does not exist
+     *              Node can not be shutdown if it is the last node
+     * @throws IllegalArgumentException if node is null or node does not exist or the cluster is empty
+     * @throws InternalException if no node is available
+     * @throws IllegalArgumentException if node is null or node does not exist or the cluster is empty
      */
     @Override
     public void nodeShuttingDown(Node node) {
@@ -149,7 +172,7 @@ public class NodeManager implements NodeEventHandler {
     }
 
     /**
-     * Consistent hashed circle is refreshed/rearrange because of node addition or removal
+     * Consistent hashed circle is rearrange because of node addition or removal
      */
     private void rearrangeNodeList(Node node, boolean isToAdd) {
         node.hash(this.numReplicas);
@@ -174,17 +197,9 @@ public class NodeManager implements NodeEventHandler {
      *  Step 1: Get all the cache entries from the node(s) to be shuffled
      *  Step 2: Evict all the cache entries from the node(s) to be shuffled
      *  Step 3: Dispatch the cache entries to the cluster
-     * @param nodeList
      */
     private void shuffleNode(Node... nodeList) {
-        Arrays.stream(nodeList).forEach(node -> {
-            Set<Map.Entry<Serializable, Object>> currentEntries = new HashSet<>(node.getCache().getAllEntries());
-            node.getCache().evict();
-            currentEntries.forEach(entry -> {
-                Node nodeCandidate = nodeGet(entry.getKey());
-                nodeCandidate.getCache().put(entry.getKey(), entry.getValue());
-            });
-        });
+        Arrays.stream(nodeList).forEach(node -> node.clearCache().forEach(entry -> nodeGet(entry.getKey()).putToCache(entry.getKey(), entry.getValue())));
     }
 }
 

@@ -1,6 +1,0 @@
-com/unity/cache/TestKey.class
-com/unity/cache/AbstractTest.class
-com/unity/cache/DistributedCacheTest.class
-com/unity/cache/node/NodeManagerTest.class
-com/unity/cache/utils/ConsistentHashUtilTest.class
-com/unity/cache/TestValue.class

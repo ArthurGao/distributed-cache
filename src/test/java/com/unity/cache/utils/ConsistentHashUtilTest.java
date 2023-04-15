@@ -8,6 +8,15 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+/**
+ * Test cases for {@link ConsistentHashUtilTest}
+ * <p>
+ *     Test cases of {@link ConsistentHashUtilTest} are divided into 2 parts:
+ *     1. Test binary search given no same input
+ *     2. Test binary search given same input
+ *     3. Test myHash
+ * </p>
+ */
 class ConsistentHashUtilTest extends AbstractTest {
 
     @Test

@@ -7,8 +7,6 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -17,13 +15,23 @@ import java.util.List;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
+/**
+ * Test cases for {@link DistributedCache}
+ * <p>
+ * Test cases of {@link DistributedCache} are divided into 3 parts:
+ * 1. Test cache add/get/shutdown/remove given fixed node number
+ * 2. Test cache add/get/shutdown/remove given dynamic node number
+ * 3. Test cache add/get/shutdown/remove given dynamic node number and dynamic replica number
+ * <p>
+ */
 class DistributedCacheTest extends AbstractTest {
 
     private final static Map<Serializable, Object> DATA = new HashMap<>();
 
     private final NodeManager nodeManager = NodeManager.getInstance();
-    private DistributedCache distributedCache;
+    private DistributedCache<Serializable> distributedCache;
 
     @BeforeEach
     void setUp() {
@@ -42,7 +50,7 @@ class DistributedCacheTest extends AbstractTest {
         nodeList.add(node2);
         nodeList.add(node3);
         nodeManager.init(nodeList, 3);
-        distributedCache = new DistributedCache(nodeManager);
+        distributedCache = new DistributedCache<>(nodeManager);
     }
 
     @Test
@@ -154,6 +162,21 @@ class DistributedCacheTest extends AbstractTest {
         //Total amount of entries are distributed to three nodes should be same
         totalCacheContentAmount = getTotalCacheContentAmount(3);
         assertThat(totalCacheContentAmount).isEqualTo(4 - nodeToRemove.getCache().getAllEntries().size());
+    }
+
+    @Test
+    void testValidateKey_givenInvalidKey_throwException() {
+        assertThrows(IllegalArgumentException.class, () -> distributedCache.put(null, "value"));
+    }
+
+    @Test
+    void testValidateValue_givenInvalidValue_throwException() {
+        assertThrows(IllegalArgumentException.class, () -> distributedCache.put(1, null));
+    }
+
+    @Test
+    void testValidateValue_givenNotExistingKey_throwException() {
+        assertThat(distributedCache.get(2L)).isNull();
     }
 
     private void putEntryToCache() {
