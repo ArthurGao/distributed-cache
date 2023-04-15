@@ -13,14 +13,14 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 /**
  * Test cases for {@link NodeManagerTest}
  * <p>
- *     Test cases of {@link NodeManagerTest} are divided into 5 parts:
- *     1. Test get node given 3 nodes + 0 replica, happy case, no exception
- *     2. Test get node given 3 nodes + 0 replica, put 100000 keys, dispatch evenly
- *     3. Test get node given 3 nodes + 1,3,5 replica, happy case, same with 0 replica
- *     4. Test get node given 3 nodes + 1,3,5 replica, put 10000 keys, dispatch evenly
- *     5. Add new node, remove node, showdown node
- *     6. Some exception cases
- *  <p>
+ * Test cases of {@link NodeManagerTest} are divided into 5 parts:
+ * 1. Test get node given 3 nodes + 0 replica, happy case, no exception
+ * 2. Test get node given 3 nodes + 0 replica, put 100000 keys, dispatch evenly
+ * 3. Test get node given 3 nodes + 1,3,5 replica, happy case, same with 0 replica
+ * 4. Test get node given 3 nodes + 1,3,5 replica, put 10000 keys, dispatch evenly
+ * 5. Add new node, remove node, showdown node
+ * 6. Some exception cases
+ * <p>
  */
 class NodeManagerTest extends AbstractTest {
 

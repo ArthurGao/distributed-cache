@@ -1,12 +1,14 @@
 package com.unity.cache.node;
 
-import com.unity.cache.utils.ConsistentHashUtil;
 import com.unity.cache.exceptions.InternalException;
+import com.unity.cache.utils.ConsistentHashUtil;
 import lombok.Getter;
 import org.apache.commons.collections4.CollectionUtils;
 
 import java.io.Serializable;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -28,6 +30,7 @@ public class NodeManager implements NodeEventHandler {
 
     /**
      * NodeManager is a singleton class with this as only entry point
+     *
      * @return NodeManager singleton instance
      */
     public static NodeManager getInstance() {
@@ -39,7 +42,8 @@ public class NodeManager implements NodeEventHandler {
 
     /**
      * Initialize the node manager with a list of nodes and number of replicas in cluster
-     * @param nodeList List of nodes to be initialized
+     *
+     * @param nodeList    List of nodes to be initialized
      * @param numReplicas Number of replicas in cluster(0 means no replica)
      * @throws IllegalArgumentException if numReplicas is less than 0
      */
@@ -55,10 +59,11 @@ public class NodeManager implements NodeEventHandler {
     /**
      * Get the node from cluster. The node is determined by the hash value of the key
      * Will always return a node
+     *
      * @param key Key to be hashed(it can be any object, but it must be serializable)
      * @return Node that the key is hashed to
      * @throws IllegalArgumentException if key is null
-     * @throws InternalException if no node is available
+     * @throws InternalException        if no node is available
      */
     public Node nodeGet(Serializable key) {
         if (key == null) {
@@ -67,7 +72,7 @@ public class NodeManager implements NodeEventHandler {
         if (CollectionUtils.isEmpty(this.hashedNodeList)) {
             throw new InternalException("No available node(s), please check the cluster status or initialize the node manager");
         }
-        if(this.hashedNodeList.size()==1){
+        if (this.hashedNodeList.size() == 1) {
             return this.hashedNodeList.get(0);
         }
 
@@ -84,12 +89,13 @@ public class NodeManager implements NodeEventHandler {
      * Will add it to a position base on consistent hash algorithm in the node list
      * Will dispatch the cache of the previous node and next node to the new node
      * No cached content will be lost from the cluster (but shuffle between different nodes)
+     *
      * @param node Node to be added
      *             Node id must be unique
      *             Node can not be null
      *             Node can not be added if it already exists
      * @throws IllegalArgumentException if node is null or node already exists or the cluster is empty
-     * @throws InternalException if no node is available
+     * @throws InternalException        if no node is available
      */
     @Override
     public void nodeAdded(Node node) {
@@ -119,12 +125,13 @@ public class NodeManager implements NodeEventHandler {
      * Will remove the node from the node list
      * Will NOT dispatch the cache of the this removed node to the new node
      * Cached content in this node will be lost
+     *
      * @param node Node to be removed
      *             Node can not be null
      *             Node can not be removed if it does not exist
      *             Node can not be removed if it is the last node
      * @throws IllegalArgumentException if node is null or node does not exist or the cluster is empty
-     * @throws InternalException if no node is available
+     * @throws InternalException        if no node is available
      * @throws IllegalArgumentException if node is null or node does not exist or the cluster is empty
      */
     @Override
@@ -147,12 +154,13 @@ public class NodeManager implements NodeEventHandler {
      * Will remove the node from the node list
      * Will dispatch the cache of the this removed node to the new node
      * Cached content in this node will NOT be lost (But shuffled to other nodes)
-     * @param node  Node to be shutdown
-     *              Node can not be null
-     *              Node can not be shutdown if it does not exist
-     *              Node can not be shutdown if it is the last node
+     *
+     * @param node Node to be shutdown
+     *             Node can not be null
+     *             Node can not be shutdown if it does not exist
+     *             Node can not be shutdown if it is the last node
      * @throws IllegalArgumentException if node is null or node does not exist or the cluster is empty
-     * @throws InternalException if no node is available
+     * @throws InternalException        if no node is available
      * @throws IllegalArgumentException if node is null or node does not exist or the cluster is empty
      */
     @Override
@@ -178,8 +186,7 @@ public class NodeManager implements NodeEventHandler {
         node.hash(this.numReplicas);
         if (isToAdd) {
             this.hashedNodeList.add(node);
-        }
-        else{
+        } else {
             this.hashedNodeList.removeIf(obj -> obj.getNodeId() == node.getNodeId());
         }
         this.hashedNodeList.sort(Node::compareTo);
@@ -193,10 +200,10 @@ public class NodeManager implements NodeEventHandler {
     }
 
     /**
-     *  Shuffle the cache of the node to other nodes
-     *  Step 1: Get all the cache entries from the node(s) to be shuffled
-     *  Step 2: Evict all the cache entries from the node(s) to be shuffled
-     *  Step 3: Dispatch the cache entries to the cluster
+     * Shuffle the cache of the node to other nodes
+     * Step 1: Get all the cache entries from the node(s) to be shuffled
+     * Step 2: Evict all the cache entries from the node(s) to be shuffled
+     * Step 3: Dispatch the cache entries to the cluster
      */
     private void shuffleNode(Node... nodeList) {
         Arrays.stream(nodeList).forEach(node -> node.clearCache().forEach(entry -> nodeGet(entry.getKey()).putToCache(entry.getKey(), entry.getValue())));

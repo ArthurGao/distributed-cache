@@ -8,6 +8,7 @@ import lombok.Data;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -28,13 +29,13 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
  */
 class DistributedCacheTest extends AbstractTest {
 
-    private final static Map<Serializable, Object> DATA = new HashMap<>();
+    private final static Map<Serializable, Serializable> DATA = new HashMap<>();
 
     private final NodeManager nodeManager = NodeManager.getInstance();
-    private DistributedCache<Serializable> distributedCache;
+    private DistributedCache distributedCache;
 
     @BeforeEach
-    void setUp() {
+    void setUp() throws IOException {
 
         DATA.clear();
         DATA.put(1, createObject(String.class));
@@ -50,7 +51,7 @@ class DistributedCacheTest extends AbstractTest {
         nodeList.add(node2);
         nodeList.add(node3);
         nodeManager.init(nodeList, 3);
-        distributedCache = new DistributedCache<>(nodeManager);
+        distributedCache = new DistributedCache(nodeManager);
     }
 
     @Test
@@ -78,7 +79,7 @@ class DistributedCacheTest extends AbstractTest {
     }
 
     @Test
-    void testCache_givenAddNewNode_allPass() {
+    void testCache_givenAddNewNode_allPass() throws IOException {
         //Put data to 3-node 3-replica cache then add one node
         putEntryToCache();
         //Total amount of entries are distributed to three nodes should be same
@@ -97,7 +98,7 @@ class DistributedCacheTest extends AbstractTest {
     }
 
     @Test
-    void testCache_givenAddNewNode_bigCache_allPass() {
+    void testCache_givenAddNewNode_bigCache_allPass() throws IOException {
         //Put data to 3-node 3-replica cache then add one node, put 100000 keys in
         int AMOUNT = 100000;
         for (int i = 0; i < AMOUNT; i++) {
@@ -129,13 +130,13 @@ class DistributedCacheTest extends AbstractTest {
     }
 
     @Test
-    void testCache_givenShutdownNode_allPass() throws InterruptedException {
+    void testCache_givenShutdownNode_allPass() throws InterruptedException, IOException {
         //Put data to 3-node 3-replica cache then shutdown one node
         Node node4 = new Node("node4", 123, NodeType.REDIS);
         nodeManager.nodeAdded(node4);
         putEntryToCache();
         //Total amount of entries are distributed to three nodes should be same
-        int totalCacheContentAmount =getTotalCacheContentAmount(4);
+        int totalCacheContentAmount = getTotalCacheContentAmount(4);
         assertThat(totalCacheContentAmount).isEqualTo(4);
 
         //Node is down, all entries should be moved to other nodes. Total size should be same
@@ -151,7 +152,7 @@ class DistributedCacheTest extends AbstractTest {
     }
 
     @Test
-    void testCache_givenRemoveNode_allPass() {
+    void testCache_givenRemoveNode_allPass() throws IOException {
         //Put data to 3-node 3-replica cache then remove one node
         Node node4 = new Node("node4", 123, NodeType.REDIS);
         nodeManager.nodeAdded(node4);
@@ -164,11 +165,11 @@ class DistributedCacheTest extends AbstractTest {
         //Node is down by failure, cache content in this node is lost.
         //Remove a node with content in its cache, left cache content shoubd be equal 4 - contentSize in this node
         Node nodeToRemove = nodeManager.getHashedNodeList().stream()
-                .filter(node -> node.getCache().getAllEntries().size() > 1).findFirst().get();
+                .filter(node -> node.getCache().getAllFromCache().size() > 1).findFirst().get();
         nodeManager.nodeRemoved(nodeToRemove);
         //Total amount of entries are distributed to three nodes should be same
         totalCacheContentAmount = getTotalCacheContentAmount(3);
-        assertThat(totalCacheContentAmount).isEqualTo(4 - nodeToRemove.getCache().getAllEntries().size());
+        assertThat(totalCacheContentAmount).isEqualTo(4 - nodeToRemove.getCache().getAllFromCache().size());
     }
 
     @Test
@@ -193,7 +194,7 @@ class DistributedCacheTest extends AbstractTest {
     private int getTotalCacheContentAmount(int size) {
         int total = 0;
         for (int i = 0; i < size; i++) {
-            total += nodeManager.getHashedNodeList().get(i).getCache().getAllEntries().size();
+            total += nodeManager.getHashedNodeList().get(i).getCache().getAllFromCache().size();
         }
         return total;
     }
@@ -207,6 +208,6 @@ class TestKey implements Serializable {
 
 @Data
 @AllArgsConstructor
-class TestValue {
+class TestValue implements Serializable {
     private String value;
 }
