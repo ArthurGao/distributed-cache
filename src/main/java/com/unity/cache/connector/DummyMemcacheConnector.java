@@ -5,6 +5,7 @@ import com.unity.cache.Cacheable;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -19,8 +20,8 @@ public class DummyMemcacheConnector implements Cacheable<Serializable> {
     }
 
     @Override
-    public Object get(Serializable key) {
-        return cache.get(key);
+    public Optional<Object> get(Serializable key) {
+        return Optional.ofNullable(cache.get(key));
     }
 
     @Override

@@ -193,7 +193,7 @@ public class NodeManager implements NodeEventHandler {
     }
 
     /**
-     * Shuffle the cache of the node to other nodes
+     *  Shuffle the cache of the node to other nodes
      *  Step 1: Get all the cache entries from the node(s) to be shuffled
      *  Step 2: Evict all the cache entries from the node(s) to be shuffled
      *  Step 3: Dispatch the cache entries to the cluster

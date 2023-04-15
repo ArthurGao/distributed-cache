@@ -2,6 +2,7 @@ package com.unity.cache;
 
 import java.io.Serializable;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 public interface Cacheable<K extends Serializable> {
@@ -10,7 +11,7 @@ public interface Cacheable<K extends Serializable> {
      * @param key the key
      * @return  the value of the key
      */
-    Object get(K key);
+    Optional<Object> get(K key);
 
     /**
      * Put the key-value pair into cache

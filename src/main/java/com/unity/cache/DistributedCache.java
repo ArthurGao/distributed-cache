@@ -5,6 +5,7 @@ import com.unity.cache.node.NodeManager;
 
 import java.io.Serializable;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -30,16 +31,15 @@ public class DistributedCache<K extends Serializable> implements Cacheable<K> {
 
     /**
      * Get the value of the key from the node where the key is stored.
-     * @param key  key of the value. It should be serializable.
-     * @return value of the key. It can be null.
+     * @param key key of the value. It should be serializable.
+     * @return value value of the key. It can be null.
      * @throws IllegalArgumentException if key is null or key is not in the cache
      * @throws InternalException if cache is not initialized for the node
      * @see NodeManager#nodeGet(Serializable)
      */
     @Override
-    public Object get(K key) {
+    public Optional<Object> get(K key) {
         validate(key);
-        //TODO: return Optional instead of null
         return nodeManager.nodeGet(key).getCache().get(key);
     }
 
@@ -75,7 +75,6 @@ public class DistributedCache<K extends Serializable> implements Cacheable<K> {
 
     /**
      * Remove all entries from one node. It is not supported for distributed cache.
-     * @throws UnsupportedOperationException
      */
     @Override
     public void evict() {
@@ -85,7 +84,6 @@ public class DistributedCache<K extends Serializable> implements Cacheable<K> {
     /**
      * Get all entries from one node
      * It is not supported for distributed cache.
-     * @throws UnsupportedOperationException
      */
     @Override
     public Set<Map.Entry<Serializable, Object>> getAllEntries() {

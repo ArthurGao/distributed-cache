@@ -9,6 +9,14 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
 
+/**
+ * ConsistentHashUtil is a utility class to calculate the hash value of an object
+ * <p>
+ * It is used to determine the node that the key is hashed to
+ * It is also used to find the closest hash value in a list
+ * The hash value is in range of [0, 1) and is calculated by MD5 algorithm
+ * </p>
+ */
 public class ConsistentHashUtil {
 
     /**

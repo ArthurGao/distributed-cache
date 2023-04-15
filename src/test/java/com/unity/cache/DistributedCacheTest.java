@@ -58,7 +58,8 @@ class DistributedCacheTest extends AbstractTest {
         //Put data to 3-node 3-replica cache
         putEntryToCache();
         DATA.forEach((key, value) -> {
-            assertThat(distributedCache.get(key)).isEqualTo(value);
+            assertThat(distributedCache.get(key)).isPresent();
+            assertThat(distributedCache.get(key).get()).isEqualTo(value);
         });
     }
 
@@ -67,10 +68,11 @@ class DistributedCacheTest extends AbstractTest {
         //Put data to 3-node 3-replica cache then delete one entry
         putEntryToCache();
         DATA.forEach((key, value) -> {
-            assertThat(distributedCache.get(key)).isEqualTo(value);
+            assertThat(distributedCache.get(key)).isPresent();
+            assertThat(distributedCache.get(key).get()).isEqualTo(value);
         });
         distributedCache.remove(1);
-        assertThat(distributedCache.get(1)).isNull();
+        assertThat(distributedCache.get(1)).isNotPresent();
         int totalSize = getTotalCacheContentAmount(3);
         assertThat(totalSize).isEqualTo(3);
     }
@@ -85,7 +87,8 @@ class DistributedCacheTest extends AbstractTest {
 
         nodeManager.nodeAdded(new Node("node4", 123, NodeType.REDIS));
         DATA.forEach((key, value) -> {
-            assertThat(distributedCache.get(key)).isEqualTo(value);
+            assertThat(distributedCache.get(key)).isPresent();
+            assertThat(distributedCache.get(key).get()).isEqualTo(value);
         });
 
         //All cache content is shuffled to four nodes but total should same
@@ -105,7 +108,8 @@ class DistributedCacheTest extends AbstractTest {
         for (int j = 0; j < AMOUNT; j++) {
             TestKey key = new TestKey(j);
             TestValue value = new TestValue("value" + j);
-            assertThat(((TestValue) distributedCache.get(key)).getValue()).isEqualTo(value.getValue());
+            assertThat(distributedCache.get(key)).isPresent();
+            assertThat(((TestValue) distributedCache.get(key).get()).getValue()).isEqualTo(value.getValue());
         }
         //Total amount of entries are distributed to three nodes should be same
         int totalCacheContentAmount = getTotalCacheContentAmount(3);
@@ -115,7 +119,8 @@ class DistributedCacheTest extends AbstractTest {
         for (int j = 0; j < AMOUNT; j++) {
             TestKey key = new TestKey(j);
             TestValue value = new TestValue("value" + j);
-            assertThat(((TestValue) distributedCache.get(key)).getValue()).isEqualTo(value.getValue());
+            assertThat(distributedCache.get(key)).isPresent();
+            assertThat(((TestValue) distributedCache.get(key).get()).getValue()).isEqualTo(value.getValue());
         }
 
         //All cache content is shuffled to four nodes but total should same
@@ -136,7 +141,8 @@ class DistributedCacheTest extends AbstractTest {
         //Node is down, all entries should be moved to other nodes. Total size should be same
         nodeManager.nodeShuttingDown(node4);
         DATA.forEach((key, value) -> {
-            assertThat(distributedCache.get(key)).isEqualTo(value);
+            assertThat(distributedCache.get(key)).isPresent();
+            assertThat(distributedCache.get(key).get()).isEqualTo(value);
         });
         //Total amount of entries are distributed to three nodes should be same
         totalCacheContentAmount = getTotalCacheContentAmount(3);
@@ -176,7 +182,7 @@ class DistributedCacheTest extends AbstractTest {
 
     @Test
     void testValidateValue_givenNotExistingKey_throwException() {
-        assertThat(distributedCache.get(2L)).isNull();
+        assertThat(distributedCache.get(2L)).isNotPresent();
     }
 
     private void putEntryToCache() {
