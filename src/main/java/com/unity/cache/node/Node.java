@@ -1,8 +1,8 @@
 package com.unity.cache.node;
 
 import com.unity.cache.connector.CacheableConnector;
-import com.unity.cache.connector.DummyMemcacheConnector;
-import com.unity.cache.connector.DummyRedisConnector;
+import com.unity.cache.connector.MemcacheConnector;
+import com.unity.cache.connector.RedisConnector;
 import com.unity.cache.utils.ConsistentHashUtil;
 import lombok.Data;
 
@@ -35,14 +35,17 @@ public class Node implements Comparable<Node> {
     private Double hash;
 
     //This is a dummy cache backend, it can be replaced by other cache backend
-    private CacheableConnector<Serializable, Serializable> cache;
+    private CacheableConnector<Serializable> cache;
 
     public Node(String hostname, int port, NodeType type) throws IOException {
         this.hostname = hostname;
         this.port = port;
         this.type = type;
-        this.cache = (this.type == NodeType.MEMCACHE) ? new DummyMemcacheConnector(hostname, port) : new DummyRedisConnector(hostname, port);
         this.nodeId = UUID.randomUUID();
+    }
+
+    public void init() throws IOException {
+        this.cache = (this.type == NodeType.MEMCACHE) ? new MemcacheConnector(hostname, port) : new RedisConnector(hostname, port);
     }
 
     @Override

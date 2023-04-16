@@ -10,7 +10,7 @@ public interface Cacheable {
      * @param key the key
      * @return the value of the key
      */
-    Optional<Serializable> get(Serializable key);
+    Optional<Object> get(Serializable key);
 
     /**
      * Put the key-value pair into cache
@@ -18,7 +18,7 @@ public interface Cacheable {
      * @param key   the key
      * @param value the value
      */
-    void put(Serializable key, Serializable value);
+    void put(Serializable key, Object value);
 
     /**
      * Remove the key from cache

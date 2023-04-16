@@ -37,7 +37,7 @@ public class DistributedCache implements Cacheable {
      * @see NodeManager#nodeGet(Serializable)
      */
     @Override
-    public Optional<Serializable> get(Serializable key) {
+    public Optional<Object> get(Serializable key) {
         validate(key);
         return nodeManager.nodeGet(key).getCache().getFromCache(key);
     }
@@ -52,7 +52,7 @@ public class DistributedCache implements Cacheable {
      * @see NodeManager#nodeGet(Serializable)
      */
     @Override
-    public void put(Serializable key, Serializable value) {
+    public void put(Serializable key, Object value) {
         validate(key);
         if (value == null) {
             throw new IllegalArgumentException("Value can't be null.");

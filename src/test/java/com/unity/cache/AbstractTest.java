@@ -1,7 +1,7 @@
 package com.unity.cache;
 
 import com.unity.cache.connector.CacheableConnector;
-import com.unity.cache.connector.DummyRedisConnector;
+import com.unity.cache.connector.DummyConnector;
 import com.unity.cache.node.Node;
 import com.unity.cache.node.NodeManager;
 import com.unity.cache.utils.ConsistentHashUtil;
@@ -48,7 +48,7 @@ public class AbstractTest {
      */
     protected <T> T createObject(EasyRandom generator, Class<T> c) {
         EasyRandomParameters parameters = new EasyRandomParameters()
-                .randomize(CacheableConnector.class, DummyRedisConnector::new);
+                .randomize(CacheableConnector.class, DummyConnector::new);
         generator = new EasyRandom(parameters);
         return generator.nextObject(c);
     }
@@ -56,7 +56,7 @@ public class AbstractTest {
     protected <T> T createObject(Class<T> c) {
         if (generator == null) {
             EasyRandomParameters parameters = new EasyRandomParameters()
-                    .randomize(CacheableConnector.class, DummyRedisConnector::new);
+                    .randomize(CacheableConnector.class, DummyConnector::new);
             generator = new EasyRandom(parameters);
         }
         return generator.nextObject(c);
